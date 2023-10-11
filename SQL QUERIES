@@ -1,0 +1,255 @@
+1--What is the churn rate for each country?
+-- SELECT
+    Geography,
+    SUM(Exited) AS ChurnedCustomers,
+    COUNT(*) AS TotalCustomers,
+    (SUM(Exited) / COUNT(*)) AS ChurnRate
+FROM
+    customer_churn
+GROUP BY
+    Geography;
+
+
+2--How does the churn rate vary between male and female customers??
+-- SELECT
+    Gender,
+    SUM(Exited) AS ChurnedCustomers,
+    COUNT(*) AS TotalCustomers,
+    (SUM(Exited) / COUNT(*)) AS ChurnRate
+FROM
+    customer_churn
+GROUP BY
+    Gender;
+
+3--identify if any age groups that have a higher churn rate??
+-- SELECT
+    CASE
+        WHEN Age BETWEEN 18 AND 30 THEN '18-30'
+        WHEN Age BETWEEN 31 AND 40 THEN '31-40'
+        WHEN Age BETWEEN 41 AND 50 THEN '41-50'
+        WHEN Age BETWEEN 51 AND 60 THEN '51-60'
+        ELSE '61+'
+    END AS AgeGroup,
+    SUM(Exited) AS ChurnedCustomers,
+    COUNT(*) AS TotalCustomers,
+    (SUM(Exited) / COUNT(*)) AS ChurnRate
+FROM
+    customer_churn
+GROUP BY
+    AgeGroup
+ORDER BY
+    AgeGroup;
+
+4--What is the average tenure of customers who churned compared to those who didn't?
+--SELECT
+    Exited,
+    AVG(Tenure) AS AverageTenure
+FROM
+    customer_churn
+GROUP BY
+    Exited;
+
+
+5--Do customers with higher Credit Scores tend to churn less frequently?
+-- SELECT
+    CreditScore,
+    SUM(Exited) AS ChurnedCustomers,
+    COUNT(*) AS TotalCustomers,
+    (SUM(Exited) / COUNT(*)) AS ChurnRate
+FROM
+    customer_churn
+GROUP BY
+    CreditScore
+ORDER BY
+    CreditScore;
+
+
+6--Does having a Credit Card  influence churn rate?
+--- SELECT
+    HasCrCard,
+    SUM(Exited) AS ChurnedCustomers,
+    COUNT(*) AS TotalCustomers,
+    (SUM(Exited) / COUNT(*)) AS ChurnRate
+FROM
+    customer_churn
+GROUP BY
+    HasCrCard;
+
+
+7--Is there a significant difference in churn rates between active members  and inactive members?
+--- SELECT
+    IsActiveMember,
+    SUM(Exited) AS ChurnedCustomers,
+    COUNT(*) AS TotalCustomers,
+    (SUM(Exited) / COUNT(*)) AS ChurnRate
+FROM
+    customer_churn
+GROUP BY
+    IsActiveMember;
+
+
+8--Do customers who have registered complaints exhibit a higher churn rate?
+-- SELECT
+    Complain,
+    SUM(Exited) AS ChurnedCustomers,
+    COUNT(*) AS TotalCustomers,
+    (SUM(Exited) / COUNT(*)) AS ChurnRate
+FROM
+    customer_churn
+GROUP BY
+    Complain;
+
+9--list churnCustomers with High Credit Scores?
+-- SELECT
+    CustomerId,
+    Surname,
+    CreditScore,
+    Exited
+FROM
+    customer_churn
+WHERE
+    CreditScore > 800 AND Exited = 1;
+
+
+10--Do customers with longer tenure tend to have a lower churn rate?
+--SELECT
+    CASE
+        WHEN Tenure <= 1 THEN '0-1 year'
+        WHEN Tenure <= 2 THEN '1-2 years'
+        WHEN Tenure <= 5 THEN '2-5 years'
+        ELSE '5+ years'
+    END AS TenureGroup,
+    SUM(Exited) AS ChurnedCustomers,
+    COUNT(*) AS TotalCustomers,
+    (SUM(Exited) / COUNT(*)) AS ChurnRate
+FROM
+    customer_churn
+GROUP BY
+    TenureGroup
+ORDER BY
+    TenureGroup;
+
+
+11--Do customers who use more products tend to have higher balances?
+---  SELECT
+    NumOfProducts,
+    AVG(Balance) AS AverageBalance
+FROM
+    customer_churn
+GROUP BY
+    NumOfProducts
+ORDER BY
+    NumOfProducts;
+
+
+12--Can you identify customers who have been with us for more than five years?
+--- SELECT
+    Gender,
+    AVG(Age) AS AverageAge,
+    AVG(CreditScore) AS AverageCreditScore,
+    AVG(Balance) AS AverageBalance,
+    AVG(NumOfProducts) AS AverageNumOfProducts,
+    AVG(EstimatedSalary) AS AverageSalary
+FROM
+    customer_churn
+WHERE
+    Tenure > 5
+GROUP BY
+    Gender;
+
+13--Is there a significant difference in estimated salary between customers who have complained and those who haven't?
+-- SELECT
+    Complain AS ComplaintStatus,
+    AVG(EstimatedSalary) AS AverageSalary
+FROM
+    customer_churn
+WHERE
+    Complain IN (1, 0)
+GROUP BY
+    Complain;
+
+14--Can you identify geographical regions with the highest and lowest churn rates?
+-- SELECT
+    Geography,
+    SUM(Exited) AS ChurnedCustomers,
+    COUNT(*) AS TotalCustomers,
+    (SUM(Exited) / COUNT(*)) AS ChurnRate
+FROM
+    customer_churn
+GROUP BY
+    Geography
+ORDER BY
+    ChurnRate DESC;
+
+15--What are the top 10 transactions with the highest amounts?
+-- SELECT
+    RowNumber,
+    CustomerId,
+    Surname,
+    Balance AS TransactionAmount,
+    CreditScore,
+    Geography,
+    Gender,
+    Age,
+    Tenure,
+    NumOfProducts,
+    HasCrCard,
+    IsActiveMember,
+    EstimatedSalary
+FROM
+    customer_churn
+ORDER BY
+    Balance DESC
+LIMIT
+    10;
+
+
+16--How does the number of products used relate to customer age and credit score?
+-- SELECT
+    NumOfProducts,
+    AVG(Age) AS AvgAge,
+    AVG(CreditScore) AS AvgCreditScore,
+    COUNT(*) AS CustomerCount
+FROM
+    customer_churn
+GROUP BY
+    NumOfProducts
+ORDER BY
+    NumOfProducts;
+
+
+17--Identifying Customers with Highest Salaries in Each Tenure Group?
+-- WITH RankedCustomers AS (
+    SELECT
+        CustomerId,
+        Tenure,
+        EstimatedSalary,
+        RANK() OVER (PARTITION BY Tenure ORDER BY EstimatedSalary DESC) AS SalaryRank
+    FROM
+        customer_churn
+)
+SELECT
+    CustomerId,
+    Tenure,
+    EstimatedSalary
+FROM
+    RankedCustomers
+WHERE
+    SalaryRank = 1;
+
+
+18--Calculate a moving average of the satisfaction score for customers ?
+-- 
+SELECT
+    RowNumber,
+    CustomerId,
+    Surname,
+    SatisfactionScore,
+    AVG(SatisfactionScore) OVER (
+        ORDER BY RowNumber
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ) AS MovingAvgSatisfactionScore
+FROM
+    customer_churn
+ORDER BY
+    RowNumber;
